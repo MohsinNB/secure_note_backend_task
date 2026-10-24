@@ -11,42 +11,38 @@ export const globalError = (
   next: NextFunction,
 ) => {
   let statusCode = 500;
-  let message = `something went wrong  from works`;
+  let message = "Something went wrong";
+  const errorSources: { path: string; message: string }[] = [];
 
-  const errorSources: any[] = [];
-  // validation error handler
+  const joinSources = () =>
+    errorSources
+      .map((e) => (e.path ? `${e.path}: ${e.message}` : e.message))
+      .join(", ");
+
+  // mongoose validation error
   if (err.name === "ValidationError") {
     statusCode = 400;
-    const errors: any = Object.values(err.errors);
-
-    errors.forEach((error: any) => {
-      errorSources.push({
-        path: error.path,
-        message: error.message,
-      });
+    Object.values(err.errors).forEach((error: any) => {
+      errorSources.push({ path: error.path, message: error.message });
     });
-    // console.log("errorSources", errorSources);
-    message = err.message;
+    message = joinSources() || "Validation failed";
   }
   // duplicate key error
   else if (err.code === 11000) {
-    const matchArray = err.message.match(/"([^"]*)"/);
-    console.log("matchArray", matchArray);
     statusCode = 409;
-    message = `Duplicate ${matchArray[1]} found`;
+    const field = Object.keys(err.keyPattern ?? {})[0] ?? "field";
+    message = `Duplicate ${field} found`;
   }
   // zod error
   else if (err.name === "ZodError") {
     statusCode = 400;
-    const errors: any = err.issues;
-    errors.forEach((element: any) => {
+    err.issues.forEach((issue: any) => {
       errorSources.push({
-        path: element.path[element.path.length - 1],
-        message: element.message,
+        path: issue.path.join("."),
+        message: issue.message,
       });
     });
-
-    message = err.message;
+    message = joinSources() || "Validation failed";
   }
   // cast error
   else if (err.name === "CastError") {
@@ -59,11 +55,11 @@ export const globalError = (
     statusCode = 500;
     message = err.message;
   }
+
   res.status(statusCode).json({
     success: false,
-    errorSources: errorSources,
-    message: message,
-    err,
+    message,
+    errorSources,
     stack: process.env.NODE_ENV === "development" ? err.stack : undefined,
   });
 };

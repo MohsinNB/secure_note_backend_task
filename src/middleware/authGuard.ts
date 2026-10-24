@@ -1,11 +1,13 @@
 import { NextFunction, Request, Response } from "express";
 import jwt from "jsonwebtoken";
 
-export const authGuard = (
+import User from "../modules/user/user.model";
+
+export const authGuard = async (
   req: Request,
   res: Response,
   next: NextFunction,
-): void => {
+): Promise<void> => {
   try {
     const authHeader = req.headers.authorization;
 
@@ -38,9 +40,19 @@ export const authGuard = (
       return;
     }
 
+    const user = await User.findById(decoded.userId).select("role").lean();
+
+    if (!user) {
+      res.status(401).json({
+        success: false,
+        message: "User no longer exists",
+      });
+      return;
+    }
+
     req.user = {
       userId: decoded.userId,
-      role: decoded.role,
+      role: user.role,
     };
 
     next();

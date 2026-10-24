@@ -25,9 +25,8 @@ const noteSchema = new Schema<INote>(
   },
 );
 
-// user nijer notes list: filter userId, sort newest first
 noteSchema.index({ userId: 1, createdAt: -1 });
-// admin sob notes list: sort newest first
+
 noteSchema.index({ createdAt: -1 });
 
 const Note = mongoose.model<INote>("Note", noteSchema);

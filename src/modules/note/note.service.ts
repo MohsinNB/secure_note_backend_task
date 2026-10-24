@@ -31,9 +31,8 @@ const getAllNotes = async (query: Record<string, unknown>) => {
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(limit)
-      .populate("userId", "name email") // kar note bujhar jonno
+      .populate("userId", "name email")
       .lean(),
-    // filter nai, tai full count na kore collection metadata theke nei
     Note.estimatedDocumentCount(),
   ]);
 
