@@ -1,4 +1,4 @@
-import { Schema, Types } from "mongoose";
+import mongoose, { Schema } from "mongoose";
 import { INote } from "./note.interface";
 
 const noteSchema = new Schema<INote>(
@@ -6,28 +6,29 @@ const noteSchema = new Schema<INote>(
     title: {
       type: String,
       required: true,
-      maxlength: 100,
       minlength: 3,
+      maxlength: 100,
+      trim: true,
     },
     content: {
       type: String,
       required: true,
     },
     userId: {
-      type: Types.ObjectId,
-      required: true,
+      type: Schema.Types.ObjectId,
       ref: "User",
-    },
-    isDeleted: {
-      type: Boolean,
-      default: false,
-    },
-    deletedAt: {
-      type: Date,
-      default: null,
+      required: true,
     },
   },
   {
     timestamps: true,
   },
 );
+
+// user nijer notes list: filter userId, sort newest first
+noteSchema.index({ userId: 1, createdAt: -1 });
+// admin sob notes list: sort newest first
+noteSchema.index({ createdAt: -1 });
+
+const Note = mongoose.model<INote>("Note", noteSchema);
+export default Note;

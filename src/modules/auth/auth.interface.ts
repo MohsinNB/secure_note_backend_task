@@ -1,3 +1,5 @@
+import { Types } from "mongoose";
+
 export interface IRegisterPayload {
   name: string;
   email: string;
@@ -5,6 +7,10 @@ export interface IRegisterPayload {
   interests?: string[];
 }
 
+export interface IAuthUser {
+  userId: string | Types.ObjectId;
+  role: "user" | "admin";
+}
 export interface ILoginPayload {
   email: string;
   password: string;
