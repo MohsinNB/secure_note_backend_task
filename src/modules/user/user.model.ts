@@ -20,7 +20,7 @@ const userSchema = new Schema<IUser>({
     enum: ["user", "admin"],
     default: "user",
   },
-  interest: {
+  interests: {
     type: [String],
     default: [],
   },
